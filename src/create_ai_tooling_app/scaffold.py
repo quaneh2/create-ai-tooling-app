@@ -1,9 +1,11 @@
 import shutil
 from pathlib import Path
 
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, TemplateNotFound
 
-TEMPLATES_DIR = Path(__file__).parent / "templates"
+
+class ScaffoldError(Exception):
+    pass
 
 
 def scaffold_project(
@@ -23,11 +25,13 @@ def scaffold_project(
         keep_trailing_newline=True,
     )
 
-    if target.exists():
-        shutil.rmtree(target)
-    target.mkdir(parents=True)
+    try:
+        if target.exists():
+            shutil.rmtree(target)
+        target.mkdir(parents=True)
+    except OSError as e:
+        raise ScaffoldError(f"Could not create project directory '{target}': {e}") from e
 
-    # Files rendered from Jinja2 templates
     template_files = [
         ("README.md.jinja", "README.md"),
         ("pyproject.toml.jinja", "pyproject.toml"),
@@ -48,10 +52,14 @@ def scaffold_project(
         ("tests/test_tool.py.jinja", "tests/test_tool.py"),
     ]
 
-    for template_path, output_path in template_files:
-        template = env.get_template(template_path)
-        rendered = template.render(**ctx)
-        out = target / output_path
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(rendered)
-
+    try:
+        for template_path, output_path in template_files:
+            template = env.get_template(template_path)
+            rendered = template.render(**ctx)
+            out = target / output_path
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_text(rendered)
+    except TemplateNotFound as e:
+        raise ScaffoldError(f"Missing template file: {e}") from e
+    except OSError as e:
+        raise ScaffoldError(f"Failed to write project files: {e}") from e

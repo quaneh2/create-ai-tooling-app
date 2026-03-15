@@ -7,7 +7,7 @@ import typer
 from rich.console import Console
 from rich.panel import Panel
 
-from .scaffold import scaffold_project
+from .scaffold import ScaffoldError, scaffold_project
 
 app = typer.Typer(add_completion=False)
 console = Console()
@@ -17,7 +17,16 @@ def to_slug(name: str) -> str:
     slug = name.lower().strip()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"[\s-]+", "_", slug)
+    slug = slug.strip("_")
     return slug
+
+
+def validate_project_name(name: str) -> bool | str:
+    if not name.strip():
+        return "Project name cannot be empty."
+    if not to_slug(name):
+        return "Project name must contain at least one letter or number."
+    return True
 
 
 @app.command()
@@ -37,7 +46,7 @@ def main(
 
     project_name: str = questionary.text(
         "Project name:",
-        validate=lambda v: bool(v.strip()) or "Project name cannot be empty.",
+        validate=validate_project_name,
     ).ask()
 
     if project_name is None:
@@ -68,12 +77,16 @@ def main(
 
     console.print(f"\n[dim]Scaffolding [bold]{project_name}[/bold] in {target}...[/dim]")
 
-    scaffold_project(
-        project_name=project_name,
-        project_slug=project_slug,
-        provider=provider,
-        target=target,
-    )
+    try:
+        scaffold_project(
+            project_name=project_name,
+            project_slug=project_slug,
+            provider=provider,
+            target=target,
+        )
+    except ScaffoldError as e:
+        console.print(f"\n[bold red]Error:[/bold red] {e}")
+        sys.exit(1)
 
     api_key_var = "ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY"
 

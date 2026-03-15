@@ -26,7 +26,7 @@ my-project/
 ├── .env.example                # API key placeholder
 ├── .gitignore
 ├── README.md
-└── src/
+├── src/
 │   └── my_project/
 │       ├── main.py             # FastAPI app entrypoint
 │       ├── models/
@@ -56,6 +56,9 @@ POST /run
 ## Development
 
 ```bash
-uv sync
+uv sync --extra dev
 uv run create-ai-tooling-app
+
+# Run tests
+uv run pytest
 ```

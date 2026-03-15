@@ -13,6 +13,11 @@ dependencies = [
 [project.scripts]
 create-ai-tooling-app = "create_ai_tooling_app.cli:app"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

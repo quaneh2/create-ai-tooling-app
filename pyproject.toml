@@ -1,6 +1,6 @@
 [project]
 name = "create-ai-tooling-app"
-version = "0.1.0"
+version = "0.2.0"
 description = "CLI to scaffold Python AI tooling API projects"
 requires-python = ">=3.11"
 dependencies = [

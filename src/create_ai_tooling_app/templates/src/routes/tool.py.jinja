@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 
 from ..llm.client import LLMClient
 from ..models.request import ToolRequest
@@ -6,11 +6,17 @@ from ..models.response import ToolResponse
 from ..prompts.base import build_prompt
 
 router = APIRouter()
-client = LLMClient()
+
+
+def get_llm_client() -> LLMClient:
+    return LLMClient()
 
 
 @router.post("/run", response_model=ToolResponse)
-def run(request: ToolRequest) -> ToolResponse:
+def run(request: ToolRequest, client: LLMClient = Depends(get_llm_client)) -> ToolResponse:
     prompt = build_prompt(request.input)
-    output = client.run(prompt)
+    try:
+        output = client.run(prompt)
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
     return ToolResponse(output=output)

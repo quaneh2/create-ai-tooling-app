@@ -1,0 +1,16 @@
+from fastapi import APIRouter
+
+from ..llm.client import LLMClient
+from ..models.request import ToolRequest
+from ..models.response import ToolResponse
+from ..prompts.base import build_prompt
+
+router = APIRouter()
+client = LLMClient()
+
+
+@router.post("/run", response_model=ToolResponse)
+def run(request: ToolRequest) -> ToolResponse:
+    prompt = build_prompt(request.input)
+    output = client.run(prompt)
+    return ToolResponse(output=output)

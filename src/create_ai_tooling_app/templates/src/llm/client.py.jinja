@@ -1,0 +1,37 @@
+import os
+
+from dotenv import load_dotenv
+{%- if provider == "anthropic" %}
+import anthropic
+{%- elif provider == "openai" %}
+import openai
+{%- endif %}
+
+load_dotenv()
+
+
+class LLMClient:
+{%- if provider == "anthropic" %}
+    def __init__(self) -> None:
+        self.client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        self.model = "claude-opus-4-6"
+
+    def run(self, prompt: str) -> str:
+        message = self.client.messages.create(
+            model=self.model,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text
+{%- elif provider == "openai" %}
+    def __init__(self) -> None:
+        self.client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        self.model = "gpt-4o"
+
+    def run(self, prompt: str) -> str:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.choices[0].message.content
+{%- endif %}

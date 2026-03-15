@@ -1,0 +1,48 @@
+# {{ project_name }}
+
+A Python AI tooling API built with FastAPI, Pydantic, and {{ "Anthropic (Claude)" if provider == "anthropic" else "OpenAI" }}.
+
+## Setup
+
+```bash
+cp .env.example .env   # add your {{ "ANTHROPIC_API_KEY" if provider == "anthropic" else "OPENAI_API_KEY" }}
+uv sync
+```
+
+## Run
+
+```bash
+uv run fastapi dev src/{{ project_slug }}/main.py
+```
+
+The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+
+## Usage
+
+```bash
+curl -X POST http://localhost:8000/run \
+  -H "Content-Type: application/json" \
+  -d '{"input": "your input here"}'
+```
+
+## Project structure
+
+```
+src/{{ project_slug }}/
+├── main.py             # FastAPI app entrypoint
+├── models/
+│   ├── request.py      # Pydantic input model — add your request fields here
+│   └── response.py     # Pydantic output model — add your response fields here
+├── prompts/
+│   └── base.py         # Prompt builder — edit your system prompt here
+├── llm/
+│   └── client.py       # LLM client wrapper
+└── routes/
+    └── tool.py         # POST /run endpoint
+```
+
+## Tests
+
+```bash
+uv run pytest
+```
